@@ -20,8 +20,13 @@ import json
 import joblib
 import random
 import numpy as np
-import tensorflow as tf
 from datetime import datetime
+
+try:
+    import tensorflow as tf
+    _TF_AVAILABLE = True
+except ImportError:
+    _TF_AVAILABLE = False
 
 
 # -----------------------------------------------------------
@@ -57,7 +62,8 @@ def set_seed(seed=42):
 
     random.seed(seed)
     np.random.seed(seed)
-    tf.random.set_seed(seed)
+    if _TF_AVAILABLE:
+        tf.random.set_seed(seed)
 
 
 # -----------------------------------------------------------
@@ -101,11 +107,14 @@ def timestamp():
 # GPU / CPU Environment Report
 # -----------------------------------------------------------
 def print_gpu_info():
-    gpus = tf.config.list_physical_devices("GPU")
-    if gpus:
-        print(f"[INFO] GPU detected: {gpus}")
+    if _TF_AVAILABLE:
+        gpus = tf.config.list_physical_devices("GPU")
+        if gpus:
+            print(f"[INFO] GPU detected: {gpus}")
+        else:
+            print("[INFO] No GPU detected — running on CPU.")
     else:
-        print("[INFO] No GPU detected — running on CPU.")
+        print("[INFO] TensorFlow not available — GPU detection skipped.")
 
 
 # -----------------------------------------------------------

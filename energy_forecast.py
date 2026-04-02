@@ -56,16 +56,3 @@ with DAG(
 
     # Define task dependencies
     preprocess_data >> build_features >> train_model >> evaluate_model
-
-# Start Airflow
-make airflow-up
-
-# Open Airflow UI
-http://localhost:8080
-
-# You will see a DAG: "energy_demand_forecast"
-# You can trigger it manually or let it run daily.
-
-git add airflow/dags/energy_forecast.py
-git commit -m "Add initial Airflow DAG: energy_demand_forecast"
-git push

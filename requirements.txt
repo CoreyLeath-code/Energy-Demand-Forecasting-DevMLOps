@@ -4,10 +4,10 @@
 # =======================================================
 
 # -----------------------
-# Core ML Framework (choose one, leave the other commented)
+# Core ML Framework
 # -----------------------
-tensorflow==2.17.0            # For LSTM/GRU/Transformer
-# torch==2.2.0+cu118           # Optional PyTorch version (GPU enabled)
+# tensorflow==2.17.0            # Uncomment for LSTM/GRU/Transformer (TF backend)
+# torch==2.2.0+cu118            # Uncomment for PyTorch GPU version
 
 # -----------------------
 # Data Processing / Time-Series
@@ -17,26 +17,34 @@ numpy==1.26.4
 scikit-learn==1.5.1
 pyyaml==6.0.2
 joblib==1.4.0
+xgboost==2.0.3
 
 # -----------------------
 # Visualization
 # -----------------------
 matplotlib==3.9.0
 seaborn==0.13.2
+streamlit==1.36.0
 
 # -----------------------
 # MLOps / Logging / Experimentation
 # -----------------------
 mlflow==2.13.0
 tqdm==4.66.4
-tensorboard==2.17.0
 
 # -----------------------
-# Production API (optional for deployment)
+# Production API
 # -----------------------
-# fastapi==0.111.0
-# uvicorn==0.29.0
-# pydantic==2.7.0
+fastapi==0.111.0
+uvicorn==0.29.0
+pydantic==2.7.0
+httpx==0.27.0              # Required by FastAPI TestClient
+
+# -----------------------
+# Development / CI
+# -----------------------
+pytest==8.2.0
+flake8==7.0.0
 
 # -----------------------
 # Utility

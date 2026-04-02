@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-from utils import (
+from src.utils import (
     ensure_dir,
     load_config,
     save_scaler,
@@ -55,7 +55,7 @@ def preprocess_data(df, config):
     df = df.sort_values(dt_col).reset_index(drop=True)
 
     # Handle missing target values
-    df[target_col] = df[target_col].interpolate().fillna(method="bfill")
+    df[target_col] = df[target_col].interpolate().bfill()
 
     return df
 

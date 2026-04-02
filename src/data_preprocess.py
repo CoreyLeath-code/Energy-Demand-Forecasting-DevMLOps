@@ -97,8 +97,8 @@ def add_rolling_features(df, target_col="value", windows=[24, 48, 72]):
 # Handle Missing Values
 # -----------------------------------------------------------
 def handle_missing(df):
-    df.fillna(method="ffill", inplace=True)
-    df.fillna(method="bfill", inplace=True)
+    df = df.ffill()
+    df = df.bfill()
     return df
 
 
