@@ -70,23 +70,3 @@ def main(config_path='configs/train.yaml'):
 
 if __name__ == "__main__":
     main()
-
-# configs/train.yaml
-
-features:
-  - load_ma_3h
-  - temperature_ma_3h
-
-target: load
-
-test_size: 0.2
-random_state: 42
-
-model_params:
-  n_estimators: 100
-  learning_rate: 0.1
-  max_depth: 5
-
-git add src/models/train.py configs/train.yaml
-git commit -m "Add model training module and config"
-git push

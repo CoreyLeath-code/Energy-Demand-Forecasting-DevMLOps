@@ -83,7 +83,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-git add src/models/evaluate.py
-git commit -m "Add model evaluation module"
-git push

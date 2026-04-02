@@ -67,18 +67,3 @@ def predict(request: PredictionRequest):
 
     # Return response
     return PredictionResponse(predicted_load=prediction)
-
-# Build and run locally with Uvicorn:
-uvicorn src.serve.app:app --reload --port 8000
-
-# Visit API docs:
-http://localhost:8000/docs
-
-# Example POST request:
-curl -X POST "http://localhost:8000/predict" \
-    -H "Content-Type: application/json" \
-    -d '{"load_ma_3h": 1234.5, "temperature_ma_3h": 22.1}'
-
-git add src/serve/app.py
-git commit -m "Add FastAPI serving app"
-git push

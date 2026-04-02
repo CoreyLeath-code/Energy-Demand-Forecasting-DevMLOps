@@ -47,8 +47,8 @@ def main():
 
     # Save processed data
     os.makedirs('data/processed', exist_ok=True)
-    df.to_csv(o_
+    df.to_csv(output_path, index=False)
+    print(f"Saved processed data to {output_path}.")
 
-git add src/data/preprocess.py
-git commit -m "Add data preprocessing module"
-git push
+if __name__ == "__main__":
+    main()
