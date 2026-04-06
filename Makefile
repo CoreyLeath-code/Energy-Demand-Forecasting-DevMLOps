@@ -40,16 +40,3 @@ run-api:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 
-make deps           # Install dependencies
-make lint           # Lint the code
-make test           # Run tests
-make train          # Run model training
-make airflow-up     # Start Airflow stack
-make airflow-down   # Stop Airflow stack
-make build-api      # Build Docker image for FastAPI service
-make run-api        # Run FastAPI service locally
-make clean          # Clean cache files
-
-git add Makefile
-git commit -m "Add project Makefile"
-git push

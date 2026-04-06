@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Data files (mount volumes instead)
+data/raw/
+data/processed/
+data/*.csv
+
+# Model artifacts (mount volumes instead)
+checkpoints/
+models/
+exports/
+*.onnx
+
+# Logs & results
+logs/
+results/
+mlruns/
+mlartifacts/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Terraform state
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform/
+
+# Docker
+docker-compose*.yml
+*.tar
+
+# Test files
+tests/

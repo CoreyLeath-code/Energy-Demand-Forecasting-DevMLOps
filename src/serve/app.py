@@ -30,6 +30,7 @@ from pydantic import BaseModel
 import joblib
 import os
 import numpy as np
+from typing import Dict
 
 MODEL_PATH = os.environ.get("MODEL_PATH", "models/energy_forecast_model.pkl")
 
@@ -65,6 +66,12 @@ class PredictionRequest(BaseModel):
 # Define response schema
 class PredictionResponse(BaseModel):
     predicted_load: float
+
+# Health check endpoint required by Kubernetes liveness/readiness probes
+@app.get("/health")
+def health() -> Dict[str, str]:
+    return {"status": "ok"}
+
 
 # Define /predict endpoint
 @app.post("/predict", response_model=PredictionResponse)

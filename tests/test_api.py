@@ -13,6 +13,12 @@ with patch("src.serve.app.get_model", return_value=_mock_model):
 client = TestClient(app)
 
 
+def test_health_endpoint():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_predict_endpoint():
     with patch("src.serve.app.get_model", return_value=_mock_model):
         response = client.post(

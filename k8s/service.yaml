@@ -11,5 +11,5 @@ spec:
     - name: http
       protocol: TCP
       port: 80            # external port
-      targetPort: 8080    # container port
+      targetPort: 8000    # container port
   type: LoadBalancer     # change to ClusterIP if using Ingress only
