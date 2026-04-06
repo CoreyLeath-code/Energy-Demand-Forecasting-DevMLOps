@@ -14,8 +14,3 @@
     - mlflow_deploy
     - prometheus_grafana
 
-mkdir -p ansible
-git add ansible/playbook.yaml
-git commit -m "Add Ansible master playbook.yaml"
-git push
-

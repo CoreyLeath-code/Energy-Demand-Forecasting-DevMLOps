@@ -21,11 +21,11 @@ spec:
     spec:
       containers:
         - name: energy-forecast
-          image: YOUR_DOCKERHUB_USERNAME/energy-forecast:latest
+          image: trojan3877/energy-forecast:latest
           imagePullPolicy: Always
 
           ports:
-            - containerPort: 8080
+            - containerPort: 8000
 
           env:
             # --- MLflow tracking ---
@@ -80,14 +80,14 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 5
 
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 8000
             initialDelaySeconds: 20
             periodSeconds: 10
 

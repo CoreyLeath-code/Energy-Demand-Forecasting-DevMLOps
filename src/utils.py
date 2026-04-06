@@ -20,6 +20,7 @@ import json
 import joblib
 import random
 import numpy as np
+import pandas as pd
 from datetime import datetime
 
 try:
@@ -46,8 +47,16 @@ def load_config(config_path="config/config.yaml"):
 
 
 # -----------------------------------------------------------
-# Ensure Directory Exists
+# Load Dataset (CSV)
 # -----------------------------------------------------------
+def load_data(path):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"[ERROR] Dataset not found: {path}")
+
+    print(f"[INFO] Loading data from: {path}")
+    df = pd.read_csv(path, parse_dates=True, index_col=0)
+    return df
+
 def ensure_dir(path):
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
