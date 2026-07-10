@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
-from src.serve import app as app_module
+import src.serve.app as app_module
 
 client = TestClient(app_module.app)
 
@@ -90,7 +90,7 @@ def test_metrics_endpoint() -> None:
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/plain")
-    assert "energy_forecast_requests_total" in response.text
+    assert "energy_forecast_latency_seconds" in response.text
 
 
 def test_invalid_model_output_returns_service_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
