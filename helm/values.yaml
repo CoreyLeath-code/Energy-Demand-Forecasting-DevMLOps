@@ -1,121 +1,77 @@
-# ============================================
-#   Energy Demand Forecasting - Helm Values
-#   L6 Production Deployment Configuration
-# ============================================
-
-# -------------------------
-# Docker Image Configuration
-# -------------------------
 image:
-  repository: trojan3877/energy-forecast
-  tag: "latest"
-  pullPolicy: Always
+  repository: ghcr.io/coreyleath-code/energy-demand-forecasting-devmlops
+  tag: latest
+  pullPolicy: IfNotPresent
 
-imagePullSecrets:
-  - name: dockerhub-secret
+imagePullSecrets: []
 
-
-# -------------------------
-# Application Settings
-# -------------------------
 app:
   port: 8000
-  modelPath: "/app/model"
+  modelPath: /app/models/energy_forecast_model.pkl
   logLevel: INFO
 
+replicaCount: 2
 
-# -------------------------
-# Replica Configuration
-# -------------------------
-replicaCount: 3
-
-
-# -------------------------
-# Autoscaling (HPA)
-# -------------------------
-autoscaling:
-  enabled: true
-  minReplicas: 3
-  maxReplicas: 10
-  cpuTarget: 60
-  memoryTarget: 70
-
-
-# -------------------------
-# Kubernetes Service Settings
-# -------------------------
 service:
-  type: LoadBalancer   # Change to ClusterIP if using Ingress
+  type: ClusterIP
   port: 80
   targetPort: 8000
 
-
-# -------------------------
-# MLflow Configuration
-# -------------------------
-mlflow:
-  trackingUriSecret: mlflow-secret
-  trackingUriKey: tracking_uri
-
-
-# -------------------------
-# Kafka Streaming Configuration
-# -------------------------
-kafka:
+autoscaling:
   enabled: true
-  bootstrapSecret: kafka-secret
-  bootstrapKey: bootstrap_servers
-  topic: "energy_stream"
+  minReplicas: 2
+  maxReplicas: 10
+  cpuTarget: 65
+  memoryTarget: 75
+  scaleDownStabilizationSeconds: 300
 
-
-# -------------------------
-# Snowflake Configuration
-# -------------------------
-snowflake:
-  enabled: true
-  secretName: snowflake-secret
-  accountKey: account
-  userKey: user
-  passwordKey: password
-
-
-# -------------------------
-# Resource Requests & Limits
-# -------------------------
 resources:
   requests:
-    cpu: "250m"
-    memory: "512Mi"
+    cpu: 100m
+    memory: 192Mi
   limits:
     cpu: "1"
-    memory: "1Gi"
+    memory: 512Mi
 
-
-# -------------------------
-# Liveness & Readiness Probes
-# -------------------------
 probes:
+  startup:
+    path: /health
+    failureThreshold: 30
+    periodSeconds: 2
+    timeoutSeconds: 2
   readiness:
     path: /health
-    initialDelaySeconds: 10
     periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
   liveness:
     path: /health
-    initialDelaySeconds: 20
-    periodSeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: 2
+    failureThreshold: 3
 
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "8000"
 
-# -------------------------
-# Pod Annotations (Optional)
-# -------------------------
-podAnnotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
 
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10001
+  capabilities:
+    drop:
+      - ALL
 
-# -------------------------
-# Node Selector / Tolerations (Optional)
-# -------------------------
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
