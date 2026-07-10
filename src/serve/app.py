@@ -83,20 +83,29 @@ def get_model_path() -> Path:
     return Path(os.getenv("MODEL_PATH", DEFAULT_MODEL_PATH))
 
 
-@lru_cache(maxsize=1)
+@lru_cache(maxsize=4)
+def _load_model(path: str, modified_time_ns: int):
+    """Load a model version identified by its canonical path and modification time."""
+
+    del modified_time_ns  # The value participates in the cache key.
+    return joblib.load(path)
+
+
 def get_model():
-    """Load and cache the optional serialized forecasting model."""
+    """Load an optional model and refresh the cache when the artifact changes."""
 
     model_path = get_model_path()
     if not model_path.is_file():
         return None
-    return joblib.load(model_path)
+
+    resolved = model_path.resolve()
+    return _load_model(str(resolved), resolved.stat().st_mtime_ns)
 
 
 def clear_model_cache() -> None:
-    """Clear the model singleton, primarily for tests and controlled reloads."""
+    """Clear loaded model versions, primarily for tests and controlled reloads."""
 
-    get_model.cache_clear()
+    _load_model.cache_clear()
 
 
 def deterministic_baseline(load_ma_3h: float, temperature_ma_3h: float) -> float:
@@ -111,7 +120,9 @@ def deterministic_baseline(load_ma_3h: float, temperature_ma_3h: float) -> float
     return max(float(load_ma_3h + weather_adjustment), 0.0)
 
 
-def run_prediction(request: PredictionRequest) -> tuple[float, Literal["trained-model", "deterministic-baseline"]]:
+def run_prediction(
+    request: PredictionRequest,
+) -> tuple[float, Literal["trained-model", "deterministic-baseline"]]:
     """Run trained-model inference or the deterministic baseline."""
 
     model = get_model()
