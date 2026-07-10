@@ -1,27 +1,23 @@
 {{- if .Values.ingress.enabled }}
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "energy-demand-forecast.fullname" . }}-ingress
+  name: {{ include "energy-demand-forecast.fullname" . }}
   labels:
-    app: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
   annotations:
-    {{- if .Values.ingress.className }}
-    kubernetes.io/ingress.class: {{ .Values.ingress.className }}
-    {{- end }}
-
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
     {{- if .Values.ingress.tlsEnabled }}
-    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.clusterIssuer | quote }}
     {{- end }}
-
 spec:
-  {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
-  {{- end }}
-
   rules:
-    - host: {{ .Values.ingress.host }}
+    - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
           - path: {{ .Values.ingress.path }}
@@ -30,13 +26,11 @@ spec:
               service:
                 name: {{ include "energy-demand-forecast.fullname" . }}
                 port:
-                  number: {{ .Values.service.port }}
-
+                  name: http
   {{- if .Values.ingress.tlsEnabled }}
   tls:
     - hosts:
-        - {{ .Values.ingress.host }}
+        - {{ .Values.ingress.host | quote }}
       secretName: {{ .Values.ingress.tlsSecret }}
   {{- end }}
-
 {{- end }}
