@@ -1,21 +1,33 @@
-version: "3.9"
-
 services:
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: trojan3877/energy-forecast:latest
+    image: ghcr.io/coreyleath-code/energy-demand-forecasting-devmlops:local
     container_name: energy-forecast-api
+    init: true
     ports:
       - "8000:8000"
     environment:
-      - MODEL_PATH=/app/models/energy_forecast_model.pkl
+      MODEL_PATH: /app/models/energy_forecast_model.pkl
     volumes:
       - ./models:/app/models:ro
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request, sys; r = urllib.request.urlopen('http://localhost:8000/health'); sys.exit(0 if r.status == 200 else 1)"]
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)
       interval: 30s
       timeout: 5s
       retries: 3
