@@ -21,7 +21,6 @@ WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser src/ src/
-COPY --chown=appuser:appuser models/ models/
 
 USER 10001
 EXPOSE 8000
