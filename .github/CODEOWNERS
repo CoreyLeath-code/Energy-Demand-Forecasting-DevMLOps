@@ -1,0 +1,11 @@
+* @CoreyLeath-code
+
+/.github/workflows/ @CoreyLeath-code
+/Dockerfile @CoreyLeath-code
+/docker-compose.yml @CoreyLeath-code
+/requirements*.txt @CoreyLeath-code
+/streamlit_demo/ @CoreyLeath-code
+/.streamlit/ @CoreyLeath-code
+/k8s/ @CoreyLeath-code
+/helm/ @CoreyLeath-code
+/SECURITY.md @CoreyLeath-code
