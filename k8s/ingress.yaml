@@ -1,18 +1,25 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: energy-forecast-ingress
+  name: energy-forecast-api
+  labels:
+    app.kubernetes.io/name: energy-forecast-api
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
   annotations:
-    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "5"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
 spec:
+  ingressClassName: nginx
   rules:
-    - host: energy.forecast.local
+    - host: energy-forecast.example.com
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: energy-forecast-service
+                name: energy-forecast-api
                 port:
-                  number: 80
+                  name: http
