@@ -2,18 +2,18 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "energy-demand-forecast.fullname" . }}-hpa
+  name: {{ include "energy-demand-forecast.fullname" . }}
   labels:
-    app: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "energy-demand-forecast.fullname" . }}
-
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
-
   metrics:
     - type: Resource
       resource:
@@ -21,27 +21,28 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.cpuTarget }}
-
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.memoryTarget }}
-
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 30
+      selectPolicy: Max
       policies:
         - type: Percent
           value: 100
-          periodSeconds: 15
-
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
     scaleDown:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: {{ .Values.autoscaling.scaleDownStabilizationSeconds }}
+      selectPolicy: Min
       policies:
         - type: Percent
-          value: 50
-          periodSeconds: 15
+          value: 25
+          periodSeconds: 60
 {{- end }}
-
