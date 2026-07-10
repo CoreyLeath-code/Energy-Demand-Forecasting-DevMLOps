@@ -1,52 +1,25 @@
-# =======================================================
-# Energy-Demand-Forecasting-DevMLOps (L5/L6 Dependencies)
-# Version-pinned for full reproducibility
-# =======================================================
+# Full local training and MLOps environment.
+# Lightweight deployment environments use requirements-api.txt or
+# streamlit_demo/requirements.txt instead of this manifest.
 
-# -----------------------
-# Core ML Framework
-# -----------------------
-# tensorflow==2.17.0            # Uncomment for LSTM/GRU/Transformer (TF backend)
-# torch==2.2.0+cu118            # Uncomment for PyTorch GPU version
+-r requirements-api.txt
 
-# -----------------------
-# Data Processing / Time-Series
-# -----------------------
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.5.1
+# Data processing and time-series modeling
+pandas==2.2.3
+scikit-learn==1.5.2
 pyyaml==6.0.2
-joblib==1.4.0
-xgboost==2.0.3
+xgboost==2.1.3
+python-dateutil==2.9.0.post0
 
-# -----------------------
-# Visualization
-# -----------------------
-matplotlib==3.9.0
+# Deep-learning architectures
+# Install a CUDA-specific PyTorch wheel separately when GPU acceleration is required.
+torch==2.5.1
+
+# Visualization and public dashboard
+matplotlib==3.9.4
 seaborn==0.13.2
-streamlit==1.36.0
+streamlit==1.49.1
 
-# -----------------------
-# MLOps / Logging / Experimentation
-# -----------------------
-mlflow==2.13.0
-tqdm==4.66.4
-
-# -----------------------
-# Production API
-# -----------------------
-fastapi==0.111.0
-uvicorn==0.29.0
-pydantic==2.7.0
-httpx==0.27.0              # Required by FastAPI TestClient
-
-# -----------------------
-# Development / CI
-# -----------------------
-pytest==8.2.0
-flake8==7.0.0
-
-# -----------------------
-# Utility
-# -----------------------
-python-dateutil==2.9.0
+# MLOps and experiment tracking
+mlflow==2.19.0
+tqdm==4.67.1
