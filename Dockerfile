@@ -16,7 +16,11 @@ ENV PATH=/opt/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app
 
-RUN useradd --create-home --uid 10001 appuser
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 appuser
+
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
