@@ -1,0 +1,86 @@
+image:
+  repository: ghcr.io/coreyleath-code/energy-demand-forecasting-devmlops
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+app:
+  port: 8000
+  modelPath: /app/models/energy_forecast_model.pkl
+  logLevel: INFO
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+ingress:
+  enabled: false
+  className: nginx
+  host: energy-forecast.example.com
+  path: /
+  tlsEnabled: false
+  clusterIssuer: letsencrypt-production
+  tlsSecret: energy-forecast-tls
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  cpuTarget: 65
+  memoryTarget: 75
+  scaleDownStabilizationSeconds: 300
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+probes:
+  startup:
+    path: /health
+    failureThreshold: 30
+    periodSeconds: 2
+    timeoutSeconds: 2
+  readiness:
+    path: /health
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+  liveness:
+    path: /health
+    periodSeconds: 15
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "8000"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 10001
+  capabilities:
+    drop:
+      - ALL
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
