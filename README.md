@@ -1,22 +1,23 @@
 # ⚡ Energy Demand Forecasting — DevMLOps
 
 ### Production-oriented time-series forecasting, model serving, Streamlit analytics, and nine-tier deployment hygiene
-
-[![Energy Forecasting Enterprise CI](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/ci.yml)
-[![Security & Supply Chain](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/security.yml)
-[![Release Engineering](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/release.yml/badge.svg)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/release.yml)
-
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11-3776AB?logo=python&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-Community%20Cloud-FF4B4B?logo=streamlit&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Forecasting%20API-009688?logo=fastapi&logoColor=white)
-![PyTorch](https://img.shields.io/badge/PyTorch-LSTM%20%7C%20GRU%20%7C%20Transformer-EE4C2C?logo=pytorch&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Deployment%20Manifests-326CE5?logo=kubernetes&logoColor=white)
-![MLflow](https://img.shields.io/badge/MLflow-Experiment%20Tracking-0194E2?logo=mlflow&logoColor=white)
-![CodeQL](https://img.shields.io/badge/CodeQL-Static%20Analysis-2F81F7?logo=github&logoColor=white)
-![SBOM](https://img.shields.io/badge/SBOM-CycloneDX-2D9CDB)
-![L6 Hygiene](https://img.shields.io/badge/L6%20Engineering-9--Tier%20Deployment%20Hygiene-gold)
-[![License](https://img.shields.io/github/license/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Production-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-Deployable-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Helm](https://img.shields.io/badge/Helm-Chart-0F1689?style=for-the-badge&logo=helm&logoColor=white)
+![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2?style=for-the-badge&logo=mlflow&logoColor=white)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Enterprise_CI-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+![CodeQL](https://img.shields.io/badge/CodeQL-Passing-2F80ED?style=for-the-badge&logo=github&logoColor=white)
+![Trivy](https://img.shields.io/badge/Trivy-Scanned-1904DA?style=for-the-badge)
+![SBOM](https://img.shields.io/badge/CycloneDX-SBOM-success?style=for-the-badge)
+![Dependabot](https://img.shields.io/badge/Dependabot-Enabled-025E8C?style=for-the-badge&logo=dependabot&logoColor=white)
+![Security](https://img.shields.io/badge/Security-Hardened-success?style=for-the-badge)
+![DevMLOps](https://img.shields.io/badge/DevMLOps-L6_Engineering-purple?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 ---
 
