@@ -1,93 +1,171 @@
-"""
-app.py
+"""Production-oriented FastAPI service for energy-demand forecasting.
 
-Module: FastAPI Service for Energy Demand Forecasting
-Author: Corey Leath
-
-Description:
-- Loads trained model on startup
-- Provides REST API endpoint for inference
-
-Endpoint:
-/predict
-    Input: JSON with feature values
-    Output: Predicted energy demand (MW)
-
-Example input:
-{
-    "load_ma_3h": 1234.5,
-    "temperature_ma_3h": 22.1
-}
-
-Example output:
-{
-    "predicted_load": 1250.3
-}
+The service lazily loads an optional trained model and provides a transparent,
+deterministic fallback when model artifacts are not present. This keeps health
+checks, local development, CI, and portfolio demonstrations operational without
+misrepresenting which inference backend produced a prediction.
 """
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import joblib
+from __future__ import annotations
+
 import os
+from functools import lru_cache
+from pathlib import Path
+from typing import Final, Literal
+
+import joblib
 import numpy as np
-from typing import Dict
+import prometheus_client as prom
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
+from prometheus_client import Counter, Histogram
+from pydantic import BaseModel, Field
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "models/energy_forecast_model.pkl")
+APP_VERSION: Final[str] = "1.1.0"
+DEFAULT_MODEL_PATH: Final[str] = "models/energy_forecast_model.pkl"
 
-# Define FastAPI app
-app = FastAPI(
-    title="Energy Demand Forecasting API",
-    description="Serve trained energy forecasting model via REST API",
-    version="1.0.0"
+REQUEST_COUNTER = Counter(
+    "energy_forecast_requests_total",
+    "Total energy-demand forecast requests.",
+    ["backend"],
+)
+ERROR_COUNTER = Counter(
+    "energy_forecast_errors_total",
+    "Total energy-demand forecast errors.",
+)
+LATENCY_HISTOGRAM = Histogram(
+    "energy_forecast_latency_seconds",
+    "Energy-demand forecast request latency.",
 )
 
-# Lazy-loaded model singleton
-_model = None
+app = FastAPI(
+    title="Energy Demand Forecasting API",
+    description="Validated energy-demand forecasting with explicit backend provenance.",
+    version=APP_VERSION,
+)
 
 
-def get_model():
-    global _model
-    if _model is None:
-        if not os.path.exists(MODEL_PATH):
-            raise HTTPException(
-                status_code=503,
-                detail=f"Model not found at {MODEL_PATH}. Train the model first."
-            )
-        print(f"Loading model from {MODEL_PATH}...")
-        _model = joblib.load(MODEL_PATH)
-    return _model
-
-
-# Define request schema
 class PredictionRequest(BaseModel):
-    load_ma_3h: float
-    temperature_ma_3h: float
+    """Validated inference request for engineered rolling features."""
 
-# Define response schema
+    load_ma_3h: float = Field(
+        ge=0.0,
+        le=1_000_000.0,
+        description="Three-hour moving-average demand in MW.",
+    )
+    temperature_ma_3h: float = Field(
+        ge=-100.0,
+        le=100.0,
+        description="Three-hour moving-average temperature in degrees Celsius.",
+    )
+
+
 class PredictionResponse(BaseModel):
+    """Prediction value and transparent inference provenance."""
+
     predicted_load: float
-
-# Health check endpoint required by Kubernetes liveness/readiness probes
-@app.get("/health")
-def health() -> Dict[str, str]:
-    return {"status": "ok"}
+    backend: Literal["trained-model", "deterministic-baseline"]
+    model_version: str = APP_VERSION
 
 
-# Define /predict endpoint
-@app.post("/predict", response_model=PredictionResponse)
-def predict(request: PredictionRequest):
+class HealthResponse(BaseModel):
+    """Service health and model-artifact readiness metadata."""
+
+    status: Literal["healthy"] = "healthy"
+    service: str = "energy-demand-forecasting-api"
+    version: str = APP_VERSION
+    model_available: bool
+
+
+def get_model_path() -> Path:
+    """Resolve the model path at call time for testability and deployment overrides."""
+
+    return Path(os.getenv("MODEL_PATH", DEFAULT_MODEL_PATH))
+
+
+@lru_cache(maxsize=1)
+def get_model():
+    """Load and cache the optional serialized forecasting model."""
+
+    model_path = get_model_path()
+    if not model_path.is_file():
+        return None
+    return joblib.load(model_path)
+
+
+def clear_model_cache() -> None:
+    """Clear the model singleton, primarily for tests and controlled reloads."""
+
+    get_model.cache_clear()
+
+
+def deterministic_baseline(load_ma_3h: float, temperature_ma_3h: float) -> float:
+    """Return a bounded, deterministic fallback demand estimate.
+
+    The fallback preserves the recent load level and applies a modest weather
+    sensitivity based on distance from a 20 °C comfort point. It is not a
+    replacement for the trained model and is identified in every response.
+    """
+
+    weather_adjustment = abs(temperature_ma_3h - 20.0) * 2.5
+    return max(float(load_ma_3h + weather_adjustment), 0.0)
+
+
+def run_prediction(request: PredictionRequest) -> tuple[float, Literal["trained-model", "deterministic-baseline"]]:
+    """Run trained-model inference or the deterministic baseline."""
+
     model = get_model()
+    if model is None:
+        return (
+            deterministic_baseline(request.load_ma_3h, request.temperature_ma_3h),
+            "deterministic-baseline",
+        )
 
-    # Prepare input
-    features = np.array([
-        [
-            request.load_ma_3h,
-            request.temperature_ma_3h
-        ]
-    ])
+    features = np.asarray(
+        [[request.load_ma_3h, request.temperature_ma_3h]],
+        dtype=np.float64,
+    )
+    prediction = np.asarray(model.predict(features), dtype=float).reshape(-1)
+    if prediction.size != 1 or not np.isfinite(prediction[0]):
+        raise ValueError("Model returned an invalid prediction.")
+    return max(float(prediction[0]), 0.0), "trained-model"
 
-    # Run inference
-    prediction = model.predict(features)[0]
 
-    # Return response
-    return PredictionResponse(predicted_load=float(prediction))
+@app.get("/")
+def root() -> dict[str, str]:
+    """Return service identity metadata."""
+
+    return {
+        "status": "ok",
+        "service": "Energy-Demand-Forecasting-DevMLOps",
+        "version": APP_VERSION,
+    }
+
+
+@app.get("/health", response_model=HealthResponse)
+def health() -> HealthResponse:
+    """Return a lightweight liveness response for orchestrators."""
+
+    return HealthResponse(model_available=get_model_path().is_file())
+
+
+@app.get("/metrics")
+def metrics() -> Response:
+    """Expose Prometheus metrics in the standard text format."""
+
+    return Response(prom.generate_latest(), media_type=prom.CONTENT_TYPE_LATEST)
+
+
+@app.post("/predict", response_model=PredictionResponse)
+def predict(request: PredictionRequest) -> PredictionResponse:
+    """Return a validated energy-demand prediction with backend provenance."""
+
+    try:
+        with LATENCY_HISTOGRAM.time():
+            prediction, backend = run_prediction(request)
+    except Exception as exc:
+        ERROR_COUNTER.inc()
+        raise HTTPException(status_code=503, detail="Forecasting backend unavailable.") from exc
+
+    REQUEST_COUNTER.labels(backend=backend).inc()
+    return PredictionResponse(predicted_load=prediction, backend=backend)
