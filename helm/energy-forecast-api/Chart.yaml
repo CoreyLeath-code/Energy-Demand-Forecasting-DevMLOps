@@ -1,0 +1,17 @@
+apiVersion: v2
+name: energy-forecast-api
+description: Secure FastAPI runtime for Energy Demand Forecasting DevMLOps
+type: application
+version: 1.1.0
+appVersion: "1.1.0"
+keywords:
+  - energy
+  - forecasting
+  - mlops
+  - fastapi
+  - kubernetes
+maintainers:
+  - name: Corey Leath
+    url: https://github.com/CoreyLeath-code
+sources:
+  - https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps

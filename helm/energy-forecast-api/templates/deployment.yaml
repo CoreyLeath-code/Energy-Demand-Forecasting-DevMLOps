@@ -3,94 +3,97 @@ kind: Deployment
 metadata:
   name: {{ include "energy-demand-forecast.fullname" . }}
   labels:
-    app: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/component: inference
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: {{ include "energy-demand-forecast.name" . }}
+      app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
       maxSurge: 1
-
   template:
     metadata:
       labels:
-        app: {{ include "energy-demand-forecast.name" . }}
+        app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
+        app.kubernetes.io/component: inference
+        app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
+      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml .Values.podAnnotations | nindent 8 }}
-
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
-
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ include "energy-demand-forecast.name" . }}
+        - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-
           ports:
-            - containerPort: {{ .Values.app.port }}
-
+            - name: http
+              containerPort: {{ .Values.app.port }}
+              protocol: TCP
           env:
-            # ----------- MLflow -----------
-            - name: MLFLOW_TRACKING_URI
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.mlflow.trackingUriSecret }}
-                  key: {{ .Values.mlflow.trackingUriKey }}
-
-            # ----------- Kafka -----------
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.kafka.bootstrapSecret }}
-                  key: {{ .Values.kafka.bootstrapKey }}
-
-            - name: KAFKA_TOPIC
-              value: {{ .Values.kafka.topic }}
-
-            # ----------- Snowflake -----------
-            - name: SNOWFLAKE_ACCOUNT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.snowflake.secretName }}
-                  key: {{ .Values.snowflake.accountKey }}
-
-            - name: SNOWFLAKE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.snowflake.secretName }}
-                  key: {{ .Values.snowflake.userKey }}
-
-            - name: SNOWFLAKE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.snowflake.secretName }}
-                  key: {{ .Values.snowflake.passwordKey }}
-
-            # ----------- App settings -----------
             - name: MODEL_PATH
-              value: {{ .Values.app.modelPath }}
-
+              value: {{ .Values.app.modelPath | quote }}
             - name: LOG_LEVEL
-              value: {{ .Values.app.logLevel }}
-
+              value: {{ .Values.app.logLevel | quote }}
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-
+          startupProbe:
+            httpGet:
+              path: {{ .Values.probes.startup.path }}
+              port: http
+            failureThreshold: {{ .Values.probes.startup.failureThreshold }}
+            periodSeconds: {{ .Values.probes.startup.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
           readinessProbe:
             httpGet:
               path: {{ .Values.probes.readiness.path }}
-              port: {{ .Values.app.port }}
-            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+              port: http
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
-
+            timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
           livenessProbe:
             httpGet:
               path: {{ .Values.probes.liveness.path }}
-              port: {{ .Values.app.port }}
-            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+              port: http
             periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          volumeMounts:
+            - name: temporary-files
+              mountPath: /tmp
+      volumes:
+        - name: temporary-files
+          emptyDir:
+            sizeLimit: 64Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

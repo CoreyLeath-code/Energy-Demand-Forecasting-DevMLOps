@@ -1,102 +1,82 @@
-# ============================================================
-# Energy-Demand-Forecasting-DevMLOps (L5/L6 Production Level)
-# Git Ignore File
-# ============================================================
-
-# -----------------------
-# Python cache / build
-# -----------------------
+# Python cache and build output
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 *.pyd
-*.pkl
-*.pickle
-*.parquet
-*.h5
-
+*.egg-info/
+.eggs/
 build/
 dist/
-.eggs/
-*.egg-info/
 
-# -----------------------
-# Virtual Environments
-# -----------------------
+# Virtual environments
+.venv/
 venv/
 env/
 ENV/
-.venv/
 
-# -----------------------
-# Jupyter Notebook
-# -----------------------
+# Test, type-check, lint, and coverage artifacts
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+pytest-results.xml
+
+# Jupyter
 .ipynb_checkpoints/
 
-# -----------------------
-# Data files
-# -----------------------
+# Local datasets and generated data
 data/raw/
 data/processed/
 data/*.csv
 data/*.xlsx
 data/*.json
-
-# Keep dataset folder structure but ignore contents
 data/*
 
-# -----------------------
-# Model artifacts
-# -----------------------
+# Model, checkpoint, and export artifacts
 checkpoints/
-models/
+models/*
+!models/.gitkeep
 exports/
+*.pkl
+*.pickle
+*.parquet
+*.h5
 *.onnx
 *.tflite
 
-# -----------------------
-# Logs & Results
-# -----------------------
+# Logs, metrics, experiment stores, and generated reports
 logs/
 results/
 tensorboard/
-*.log
-*.txt
-
-# -----------------------
-# MLflow
-# -----------------------
 mlruns/
 mlartifacts/
+*.log
+trivy-*.json
+pip-audit*.json
+*.sarif
+*sbom*.json
 
-# -----------------------
-# OS files
-# -----------------------
+# Local credentials and environment configuration
+.env
+.env.*
+*.env
+*.secret
+.streamlit/secrets.toml
+
+# IDE and operating-system files
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 
-# -----------------------
-# Editor / IDE files
-# -----------------------
-.vscode/
-.idea/
-
-# -----------------------
-# Docker
-# -----------------------
+# Local Docker and archive output
 *.tar
-docker/*.log
-
-# -----------------------
-# Cache
-# -----------------------
-.cache/
 *.zip
 *.tar.gz
+docker/*.log
 
-# -----------------------
-# Configs that should not be committed
-# -----------------------
-*.secret
-*.env
-.env.*
+# Tool caches
+.cache/

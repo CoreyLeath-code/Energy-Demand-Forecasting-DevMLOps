@@ -1,95 +1,101 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: energy-forecast-app
+  name: energy-forecast-api
   labels:
-    app: energy-forecast
+    app.kubernetes.io/name: energy-forecast-api
+    app.kubernetes.io/component: inference
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
 spec:
-  replicas: 3
+  replicas: 2
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: energy-forecast
+      app.kubernetes.io/name: energy-forecast-api
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
       maxSurge: 1
   template:
     metadata:
       labels:
-        app: energy-forecast
+        app.kubernetes.io/name: energy-forecast-api
+        app.kubernetes.io/component: inference
+        app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
     spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
-        - name: energy-forecast
-          image: trojan3877/energy-forecast:latest
-          imagePullPolicy: Always
-
+        - name: api
+          image: ghcr.io/coreyleath-code/energy-demand-forecasting-devmlops:latest
+          imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8000
-
+            - name: http
+              containerPort: 8000
+              protocol: TCP
           env:
-            # --- MLflow tracking ---
-            - name: MLFLOW_TRACKING_URI
-              valueFrom:
-                secretKeyRef:
-                  name: mlflow-secret
-                  key: tracking_uri
-
-            # --- Kafka Streaming ---
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              valueFrom:
-                secretKeyRef:
-                  name: kafka-secret
-                  key: bootstrap_servers
-
-            - name: KAFKA_TOPIC
-              value: "energy_stream"
-
-            # --- Snowflake ---
-            - name: SNOWFLAKE_ACCOUNT
-              valueFrom:
-                secretKeyRef:
-                  name: snowflake-secret
-                  key: account
-
-            - name: SNOWFLAKE_USER
-              valueFrom:
-                secretKeyRef:
-                  name: snowflake-secret
-                  key: user
-
-            - name: SNOWFLAKE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: snowflake-secret
-                  key: password
-
-            # --- Model Registry / API ---
             - name: MODEL_PATH
-              value: "/app/model"
-
+              value: /app/models/energy_forecast_model.pkl
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: 100m
+              memory: 192Mi
             limits:
               cpu: "1"
-              memory: "1Gi"
-
-          # Probes for L6 Production Stability
+              memory: 512Mi
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+            timeoutSeconds: 2
           readinessProbe:
             httpGet:
               path: /health
-              port: 8000
-            initialDelaySeconds: 10
+              port: http
             periodSeconds: 5
-
+            timeoutSeconds: 2
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
-              port: 8000
-            initialDelaySeconds: 20
-            periodSeconds: 10
-
-      imagePullSecrets:
-        - name: dockerhub-secret
+              port: http
+            periodSeconds: 15
+            timeoutSeconds: 2
+            failureThreshold: 3
+          volumeMounts:
+            - name: temporary-files
+              mountPath: /tmp
+            - name: model-artifacts
+              mountPath: /app/models
+              readOnly: true
+      volumes:
+        - name: temporary-files
+          emptyDir:
+            sizeLimit: 64Mi
+        - name: model-artifacts
+          emptyDir:
+            sizeLimit: 1Gi

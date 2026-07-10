@@ -17,6 +17,15 @@ service:
   port: 80
   targetPort: 8000
 
+ingress:
+  enabled: false
+  className: nginx
+  host: energy-forecast.example.com
+  path: /
+  tlsEnabled: false
+  clusterIssuer: letsencrypt-production
+  tlsSecret: energy-forecast-tls
+
 autoscaling:
   enabled: true
   minReplicas: 2

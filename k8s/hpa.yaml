@@ -1,45 +1,46 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: energy-forecast-hpa
+  name: energy-forecast-api
   labels:
-    app: energy-forecast
+    app.kubernetes.io/name: energy-forecast-api
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: energy-forecast-app
-
-  minReplicas: 3       # Recommended minimum for production
-  maxReplicas: 10      # Burst capacity for heavy load
-
+    name: energy-forecast-api
+  minReplicas: 2
+  maxReplicas: 10
   metrics:
-    # CPU-based autoscaling
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 60   # scale when average CPU > 60%
-
-    # Memory-based autoscaling
+          averageUtilization: 65
     - type: Resource
       resource:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 70   # scale when memory > 70%
-
+          averageUtilization: 75
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 30
+      selectPolicy: Max
       policies:
         - type: Percent
           value: 100
-          periodSeconds: 15
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
     scaleDown:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 300
+      selectPolicy: Min
       policies:
         - type: Percent
-          value: 50
-          periodSeconds: 15
+          value: 25
+          periodSeconds: 60

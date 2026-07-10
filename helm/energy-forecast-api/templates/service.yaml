@@ -3,13 +3,15 @@ kind: Service
 metadata:
   name: {{ include "energy-demand-forecast.fullname" . }}
   labels:
-    app: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/component: inference
+    app.kubernetes.io/part-of: energy-demand-forecasting-devmlops
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ include "energy-demand-forecast.name" . }}
+    app.kubernetes.io/name: {{ include "energy-demand-forecast.name" . }}
   ports:
     - name: http
       protocol: TCP
       port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
+      targetPort: http
