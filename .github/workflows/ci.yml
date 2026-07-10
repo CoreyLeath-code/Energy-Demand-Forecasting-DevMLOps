@@ -152,10 +152,39 @@ jobs:
           echo "API container did not become healthy in time."
           exit 1
 
+  infrastructure-validation:
+    name: Compose & Helm Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: latest
+
+      - name: Lint Helm chart
+        run: helm lint helm/energy-forecast-api --strict
+
+      - name: Render Helm deployment evidence
+        run: |
+          helm template energy-forecast helm/energy-forecast-api \
+            --set image.tag=ci > rendered-helm-manifests.yaml
+          test -s rendered-helm-manifests.yaml
+
+      - name: Upload rendered deployment evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-helm-manifests
+          path: rendered-helm-manifests.yaml
+          if-no-files-found: error
+
   release-readiness:
     name: Release Readiness Contract
     if: always()
-    needs: [quality-and-test, streamlit-demo, container]
+    needs: [quality-and-test, streamlit-demo, container, infrastructure-validation]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -165,13 +194,16 @@ jobs:
           QUALITY_RESULT: ${{ needs.quality-and-test.result }}
           STREAMLIT_RESULT: ${{ needs.streamlit-demo.result }}
           CONTAINER_RESULT: ${{ needs.container.result }}
+          INFRASTRUCTURE_RESULT: ${{ needs.infrastructure-validation.result }}
         run: |
           echo "Quality result: ${QUALITY_RESULT}"
           echo "Streamlit result: ${STREAMLIT_RESULT}"
           echo "Container result: ${CONTAINER_RESULT}"
+          echo "Infrastructure result: ${INFRASTRUCTURE_RESULT}"
           test "${QUALITY_RESULT}" = "success"
           test "${STREAMLIT_RESULT}" = "success"
           test "${CONTAINER_RESULT}" = "success"
+          test "${INFRASTRUCTURE_RESULT}" = "success"
 
       - name: Verify governance and deployment metadata
         run: |
@@ -190,4 +222,6 @@ jobs:
           test -f .github/dependabot.yml
           test -f docs/L6_DEPLOYMENT_HYGIENE.md
           test -f docs/STREAMLIT_DEPLOYMENT.md
+          test -f helm/energy-forecast-api/Chart.yaml
+          test -f helm/energy-forecast-api/values.yaml
           echo "Energy forecasting release-readiness contract passed."
