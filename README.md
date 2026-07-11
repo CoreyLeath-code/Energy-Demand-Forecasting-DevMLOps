@@ -21,8 +21,6 @@
 
 ---
 
-## Executive Summary
-
 **Energy Demand Forecasting — DevMLOps** is a portfolio-scale AI and MLOps platform for exploring hourly energy-demand forecasting across the full software lifecycle:
 
 - validated data ingestion and time-series preparation;
