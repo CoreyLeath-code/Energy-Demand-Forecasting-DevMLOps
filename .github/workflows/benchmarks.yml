@@ -1,0 +1,67 @@
+name: Research Benchmarks
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: research-benchmarks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: Reproducible Rolling-Origin Evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run seeded benchmark
+        env:
+          PYTHONHASHSEED: "0"
+        run: |
+          python benchmarks/run_benchmark.py --iterations 500 --warmup 50 --output benchmark-results.json
+      - name: Validate evidence contract
+        run: |
+          python - <<'PY'
+          import json
+          evidence = json.load(open("benchmark-results.json", encoding="utf-8"))
+          assert evidence["quality"]["folds"] == 30
+          assert evidence["quality"]["samples"] == 720
+          assert evidence["quality"]["mase"] < 2.0
+          assert evidence["latency_ms"]["p95"] > 0
+          assert len(evidence["data_sha256"]) == 64
+          print("Benchmark evidence contract passed.")
+          PY
+      - name: Publish job summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          e = json.load(open("benchmark-results.json", encoding="utf-8"))
+          print("## Reproducible Forecast Evidence")
+          print(f"- MAE: {e['quality']['mae']:.3f}")
+          print(f"- RMSE: {e['quality']['rmse']:.3f}")
+          print(f"- MAPE: {e['quality']['mape_percent']:.3f}%")
+          print(f"- sMAPE: {e['quality']['smape_percent']:.3f}%")
+          print(f"- MASE: {e['quality']['mase']:.3f}")
+          print(f"- P95 latency: {e['latency_ms']['p95']:.3f} ms")
+          print(f"- Throughput: {e['throughput']['forecasts_per_second']:.1f} forecasts/s")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: research-benchmark-evidence
+          path: benchmark-results.json
+          if-no-files-found: error
+          retention-days: 30
