@@ -1,6 +1,16 @@
 # ⚡ Energy Demand Forecasting — DevMLOps
 
 ### Production-oriented time-series forecasting, model serving, Streamlit analytics, and nine-tier deployment hygiene
+
+[![CI](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/ci.yml/badge.svg)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/ci.yml)
+[![Research Benchmarks](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/benchmarks.yml/badge.svg)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/benchmarks.yml)
+[![Security](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/security.yml/badge.svg)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/workflows/security.yml)
+![Coverage](https://img.shields.io/badge/coverage-93.10%25-brightgreen)
+![Tests](https://img.shields.io/badge/tests-23%20passed-brightgreen)
+![Rolling Origin](https://img.shields.io/badge/rolling--origin-30%20folds-blue)
+![MASE](https://img.shields.io/badge/MASE-1.551-blueviolet)
+![P95 Latency](https://img.shields.io/badge/P95-28.969%20ms-blue)
+
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Production-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Deployable-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
@@ -35,6 +45,39 @@
 The repository is designed to demonstrate engineering breadth without hiding implementation limitations. The public Streamlit application uses a transparent **seasonal-naive baseline** so it can run without private data, model checkpoints, or GPU dependencies. The full training pathway remains available for deeper model experiments.
 
 > **Portfolio scope:** This repository demonstrates production-oriented engineering patterns. It is not a utility-grade forecasting system, a substitute for grid-operator validation, or a commercial service-level guarantee.
+
+---
+
+## Research Metrics and Reproducible Benchmarks
+
+The public baseline is evaluated with a **leakage-safe expanding-window rolling-origin protocol**. Each fold trains only on observations at or before its origin and forecasts the next 24 hours. The source-of-truth JSON is [`benchmarks/latest.json`](benchmarks/latest.json), the human-readable protocol is [`benchmarks/benchmark_report.md`](benchmarks/benchmark_report.md), and the full control audit is [`docs/AUDIT.md`](docs/AUDIT.md).
+
+| Category | Metric | GitHub-hosted result |
+|---|---|---:|
+| Protocol | Folds / predictions | 30 / 720 |
+| Accuracy | MAE | 88.674 demand units |
+| Accuracy | RMSE | 104.780 demand units |
+| Accuracy | MAPE / sMAPE | 6.994% / 7.001% |
+| Relative error | MASE | 1.551 |
+| Bias | Mean signed error | +0.553 demand units |
+| Fold stability | MAE mean ± SD | 88.674 ± 50.136 |
+| Runtime | Mean / P95 / P99 | 28.422 / 28.969 / 40.401 ms |
+| Throughput | 24-hour forecasts | 35.18 forecasts/s |
+| Memory | Peak traced Python allocation | 0.530 MiB |
+| Verification | Tests / coverage | 23 passed / 93.10% |
+
+**Protocol:** seeded synthetic hourly demand (`seed=20260719`, 2,160 observations, SHA-256 `d77dd9…fd102`); 14-day initial history; 30 non-overlapping 24-hour folds; 50 latency warmups and 500 timed iterations; GitHub-hosted Ubuntu 24.04 / Python 3.11.15. See [workflow run 29692899581](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/actions/runs/29692899581).
+
+> **Claim boundary:** these results characterize the transparent seasonal-naive baseline on synthetic data. They do not establish real-grid generalization, trained LSTM/GRU/Transformer/XGBoost accuracy, calibrated probabilistic coverage, or production SLOs. Latency excludes network, API, and UI overhead and varies by runner.
+
+### Reproduce the evidence
+
+```bash
+PYTHONHASHSEED=0 python benchmarks/run_benchmark.py \
+  --iterations 500 --warmup 50 --output benchmark-results.json
+```
+
+The quality metrics and dataset fingerprint are deterministic. Runtime metrics are environment-sensitive. The workflow rejects malformed evidence, a changed fold/sample contract, MASE ≥ 2.0, or missing fingerprint/latency values.
 
 ---
 
@@ -514,7 +557,6 @@ Current constraints are documented intentionally:
 
 ## Roadmap
 
-- Time-aware cross-validation and rolling-origin evaluation.
 - Baseline-versus-model comparison dashboard.
 - Probabilistic forecasting and calibrated prediction intervals.
 - Model registry promotion policy.
