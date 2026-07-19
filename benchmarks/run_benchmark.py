@@ -35,7 +35,7 @@ def run(iterations: int, warmup: int) -> dict[str, object]:
         frame, horizon=24, seasonal_period=24, initial_train_size=24 * 14,
         step=24, max_folds=30,
     )
-    quality = regression_metrics(evidence, seasonal_period=24)
+    quality = regression_metrics(evidence, history=frame, seasonal_period=24)
 
     for _ in range(warmup):
         seasonal_naive_forecast(frame, settings)
