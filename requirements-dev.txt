@@ -3,7 +3,7 @@ pandas==2.2.3
 streamlit==1.49.1
 httpx==0.28.1
 pytest==9.1.1
-pytest-cov==6.0.0
+pytest-cov==7.1.0
 ruff==0.15.22
 mypy==2.3.0
 bandit==1.8.2
