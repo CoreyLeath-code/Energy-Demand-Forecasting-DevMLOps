@@ -9,6 +9,7 @@ pipeline, while this module provides a transparent seasonal-naive baseline.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from numbers import Integral, Real
 from typing import Final
 
 import numpy as np
@@ -29,6 +30,13 @@ class ForecastSettings:
     confidence_z_score: float = 1.96
 
     def __post_init__(self) -> None:
+        for name, value in (
+            ("horizon", self.horizon),
+            ("seasonal_period", self.seasonal_period),
+        ):
+            if isinstance(value, bool) or not isinstance(value, Integral):
+                raise ValueError(f"{name} must be an integer.")
+
         if not 1 <= self.horizon <= MAX_FORECAST_HORIZON:
             raise ValueError(
                 f"horizon must be between 1 and {MAX_FORECAST_HORIZON}; "
@@ -36,8 +44,13 @@ class ForecastSettings:
             )
         if self.seasonal_period < 2:
             raise ValueError("seasonal_period must be at least 2.")
-        if self.confidence_z_score <= 0:
-            raise ValueError("confidence_z_score must be positive.")
+        if (
+            isinstance(self.confidence_z_score, bool)
+            or not isinstance(self.confidence_z_score, Real)
+            or not np.isfinite(self.confidence_z_score)
+            or self.confidence_z_score <= 0
+        ):
+            raise ValueError("confidence_z_score must be a finite positive number.")
 
 
 def generate_demo_data(

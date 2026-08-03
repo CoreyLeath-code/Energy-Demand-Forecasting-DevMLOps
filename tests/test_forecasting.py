@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -59,6 +60,7 @@ def test_forecast_contract_is_complete_and_deterministic() -> None:
     assert (first["lower_bound"] <= first["forecast"]).all()
     assert (first["forecast"] <= first["upper_bound"]).all()
     assert (first[["forecast", "lower_bound", "upper_bound"]] >= 0).all().all()
+    assert np.isfinite(first[["forecast", "lower_bound", "upper_bound"]].to_numpy()).all()
 
 
 def test_forecast_rejects_insufficient_history() -> None:
@@ -72,6 +74,26 @@ def test_forecast_rejects_insufficient_history() -> None:
 def test_invalid_horizons_are_rejected(horizon: int) -> None:
     with pytest.raises(ValueError, match="horizon"):
         ForecastSettings(horizon=horizon)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("horizon", True),
+        ("horizon", 24.5),
+        ("seasonal_period", False),
+        ("seasonal_period", 24.5),
+    ],
+)
+def test_forecast_settings_reject_non_integral_periods(field: str, value: object) -> None:
+    with pytest.raises(ValueError, match=field):
+        ForecastSettings(**{field: value})
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), 0.0, True])
+def test_forecast_settings_reject_invalid_confidence_values(value: object) -> None:
+    with pytest.raises(ValueError, match="confidence_z_score"):
+        ForecastSettings(confidence_z_score=value)
 
 
 def test_dataset_summary_is_serializable() -> None:
