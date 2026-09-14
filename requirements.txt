@@ -22,4 +22,4 @@ streamlit==1.49.1
 
 # MLOps and experiment tracking
 mlflow==3.15.2
-tqdm==4.70.0
+tqdm==4.70.1
