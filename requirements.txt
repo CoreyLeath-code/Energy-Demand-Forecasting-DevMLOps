@@ -16,7 +16,7 @@ python-dateutil==2.9.0.post0
 torch==2.13.0
 
 # Visualization and public dashboard
-matplotlib==3.11.1
+matplotlib==3.11.2
 seaborn==0.13.2
 streamlit==1.49.1
 
