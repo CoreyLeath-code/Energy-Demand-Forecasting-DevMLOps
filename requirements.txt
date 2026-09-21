@@ -13,7 +13,7 @@ python-dateutil==2.9.0.post0
 
 # Deep-learning architectures
 # Install a CUDA-specific PyTorch wheel separately when GPU acceleration is required.
-torch==2.13.0
+torch==2.14.0
 
 # Visualization and public dashboard
 matplotlib==3.11.1
