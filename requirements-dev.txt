@@ -1,5 +1,5 @@
 -r requirements-api.txt
-pandas==2.2.3
+pandas==3.0.6
 streamlit==1.49.1
 httpx==0.28.1
 pytest==9.1.1
