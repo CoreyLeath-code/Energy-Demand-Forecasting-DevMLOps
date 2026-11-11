@@ -1,5 +1,11 @@
 # ⚡ Energy Demand Forecasting — DevMLOps
 
+<!-- portfolio-lifecycle-badges:start -->
+[![Latest release](https://img.shields.io/github/v/release/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps?display_name=tag&sort=semver)](https://github.com/CoreyLeath-code/Energy-Demand-Forecasting-DevMLOps/releases/latest)
+[![Lifecycle documentation](https://img.shields.io/badge/lifecycle-documented-2563eb)](#ownership-promotion-and-operational-lifecycle)
+[![Maintainer](https://img.shields.io/badge/maintainer-Corey%20Leath-111827)](https://github.com/CoreyLeath-code)
+<!-- portfolio-lifecycle-badges:end -->
+
 
 
 <img width="1448" height="1086" alt="image" src="https://github.com/user-attachments/assets/5ed834a3-a98c-4a04-acfe-c166befcdc26" />
