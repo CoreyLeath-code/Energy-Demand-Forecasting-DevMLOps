@@ -1,5 +1,7 @@
 -r requirements-api.txt
 pandas==2.2.3
+# Python 3.10 quality matrix: keep the last compatible Streamlit line.
+# Python 3.11+ dashboard is independently exercised in the Streamlit smoke job.
 streamlit==1.65.0
 httpx==0.28.1
 pytest==9.2.0
