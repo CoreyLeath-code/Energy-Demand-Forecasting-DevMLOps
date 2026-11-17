@@ -1,6 +1,6 @@
 -r requirements-api.txt
 pandas==2.2.3
-streamlit==1.65.0
+streamlit==1.67.0
 httpx==0.28.1
 pytest==9.2.0
 pytest-cov==7.1.0
