@@ -32,6 +32,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+      - name: Verify Pandas version matches the Python compatibility matrix
+        run: |
+          python - <<'PY'
+          import sys
+          import pandas as pd
+          expected = "3.1.1" if sys.version_info >= (3, 11) else "2.2.3"
+          assert pd.__version__ == expected, f"expected pandas {expected}, found {pd.__version__}"
+          print(f"Python {sys.version.split()[0]} uses pandas {pd.__version__}")
+          PY
       - name: Validate Python syntax
         run: python -m compileall -q src tests benchmarks streamlit_app.py streamlit_demo/app.py
       - name: Run Ruff correctness checks
